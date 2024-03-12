@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
-import Header from "../(marketing)/_components/Header";
+import Header from "@/app/_components/Header";
 
 export const metadata: Metadata = {
   title: "Supabudget",

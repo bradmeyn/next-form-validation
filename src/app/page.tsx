@@ -1,31 +1,24 @@
 "use client";
-import { Divider, Card } from "@tremor/react";
-import { GitHubButton, GoogleButton } from "../_components/AuthButtons";
+import { Card } from "@tremor/react";
+
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
-import FormInput from "../_components/FormInput";
+import FormInput from "@/app/_components/FormInput";
 import { RiCheckFill, RiErrorWarningFill } from "@remixicon/react";
 import { useRef } from "react";
 import { useFormState } from "react-dom";
-import { SignUpWithPasswordCredentials } from "@supabase/supabase-js";
+import { signUpAction } from "@/app/actions";
 
 export default function SignUpPage() {
   return (
     <div className="flex min-h-full flex-1 flex-col mt-20 px-4 py-10 lg:px-6">
-      <h1 className="text-center mb-10">Supabudget</h1>
       <Card className="sm:mx-auto sm:w-full sm:max-w-lg">
         <h3 className="text-center text-tremor-title font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
           Create an account
         </h3>
 
         <SignUpForm />
-
-        <Divider>or with</Divider>
-        <div className="grid grid-cols-2 gap-2">
-          <GoogleButton />
-          <GitHubButton />
-        </div>
 
         <p className="mt-4 text-tremor-label text-tremor-content dark:text-dark-tremor-content text-center">
           By signing in, you agree to our{" "}
@@ -74,7 +67,13 @@ const schema = z
   });
 
 function SignUpForm() {
-  const [state, formAction] = useFormState();
+  const [state, formAction] = useFormState(signUpAction, {
+    firstName: "",
+    lastName: "",
+    message: "",
+    email: "",
+    password: "",
+  });
 
   const {
     register,

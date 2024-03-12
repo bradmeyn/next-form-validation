@@ -1,18 +1,9 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 
 export default async function Header() {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   return (
     <header className="flex justify-between container py-4">
-      <span className="text-slate-900 font-bold ">Supabudget</span>
-
-      {user ? <AuthenticatedLinks /> : <UnauthenticatedLinks />}
+      <span className="text-slate-900 font-bold ">Next Forms</span>
     </header>
   );
 }
