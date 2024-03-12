@@ -3,8 +3,8 @@ import "@/app/globals.css";
 import Header from "@/app/_components/Header";
 
 export const metadata: Metadata = {
-  title: "Supabudget",
-  description: "Save your wallet",
+  title: "Next Forms",
+  description: "Client and server side form handling with Next.js",
 };
 
 export default function RootLayout({

@@ -6,16 +6,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import FormInput from "@/app/_components/FormInput";
 import { RiCheckFill, RiErrorWarningFill } from "@remixicon/react";
-import { useRef } from "react";
-import { useFormState } from "react-dom";
-import { signUpAction } from "@/app/actions";
+import { useFormState, useFormStatus } from "react-dom";
+import { FormState, signUpAction } from "@/app/actions";
 
 export default function SignUpPage() {
   return (
     <div className="flex min-h-full flex-1 flex-col mt-20 px-4 py-10 lg:px-6">
       <Card className="sm:mx-auto sm:w-full sm:max-w-lg">
         <h3 className="text-center text-tremor-title font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          Create an account
+          Sign up form
         </h3>
 
         <SignUpForm />
@@ -58,7 +57,7 @@ const schema = z
     password: z
       .string()
       .trim()
-      .min(8, { message: "Password must be 8 or more characters" }),
+      .min(4, { message: "Password must be 4 or more characters" }),
     confirmPassword: z.string().trim(),
   })
   .refine((data: FormInputs) => data.password === data.confirmPassword, {
@@ -67,13 +66,14 @@ const schema = z
   });
 
 function SignUpForm() {
-  const [state, formAction] = useFormState(signUpAction, {
-    firstName: "",
-    lastName: "",
+  const initialFormState = {
     message: "",
-    email: "",
-    password: "",
-  });
+    success: false,
+  };
+
+  const [state] = useFormState(signUpAction, initialFormState);
+
+  const { pending } = useFormStatus();
 
   const {
     register,
@@ -91,91 +91,91 @@ function SignUpForm() {
     },
   });
 
+  console.log(state);
+
   // Watch the values of the password and confirmPassword to compare
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
 
-  const formRef = useRef<HTMLFormElement>(null);
-
   return (
-    <form
-      action="#"
-      method="post"
-      className="mt-6 grid grid-cols-2 gap-5"
-      onSubmit={handleSubmit(() => formRef.current?.submit())} //
-    >
-      <div className="col-span-full sm:col-span-1">
-        <FormInput
-          label="First name"
-          id="first-name"
-          type="text"
-          placeholder="First name"
-          register={register("firstName")}
-          error={errors?.firstName?.message}
-        />
-      </div>
+    <>
+      {state?.message ? (
+        <Message message={state.message} success={state.success} />
+      ) : null}
+      <form action={signUpAction} className="mt-6 grid grid-cols-2 gap-5">
+        <div className="col-span-full sm:col-span-1">
+          <FormInput
+            label="First name"
+            id="firstName"
+            type="text"
+            placeholder="First name"
+            register={register("firstName")}
+            error={errors?.firstName?.message}
+          />
+        </div>
 
-      <div className="col-span-full sm:col-span-1">
-        <FormInput
-          label="Last name"
-          id="last-name"
-          type="text"
-          placeholder="Last name"
-          register={register("lastName")}
-          error={errors?.lastName?.message}
-        />
-      </div>
+        <div className="col-span-full sm:col-span-1">
+          <FormInput
+            label="Last name"
+            id="lastName"
+            type="text"
+            placeholder="Last name"
+            register={register("lastName")}
+            error={errors?.lastName?.message}
+          />
+        </div>
 
-      <div className="col-span-2">
-        <FormInput
-          label="Email"
-          id="email"
-          type="email"
-          placeholder="user@mail.com"
-          register={register("email")}
-          error={errors?.email?.message}
-        />
-      </div>
-      <div className="col-span-2">
-        <FormInput
-          label="Password"
-          id="password"
-          type="password"
-          placeholder="Password"
-          register={register("password")}
-          error={errors.password?.message}
-        />
-      </div>
+        <div className="col-span-2">
+          <FormInput
+            label="Email"
+            id="email"
+            type="email"
+            placeholder="user@mail.com"
+            register={register("email")}
+            error={errors?.email?.message}
+          />
+        </div>
+        <div className="col-span-2">
+          <FormInput
+            label="Password"
+            id="password"
+            type="password"
+            placeholder="Password"
+            register={register("password")}
+            error={errors.password?.message}
+          />
+        </div>
 
-      <div className="col-span-2">
-        <FormInput
-          label="Confirm password"
-          id="confirm-password"
-          type="password"
-          placeholder="Confirm password"
-          register={register("confirmPassword")}
-          error={errors.confirmPassword?.message}
-        />
-        <PasswordCompare
-          password={password}
-          confirmPassword={confirmPassword}
-        />
-      </div>
+        <div className="col-span-2">
+          <FormInput
+            label="Confirm password"
+            id="confirm-password"
+            type="password"
+            placeholder="Confirm password"
+            register={register("confirmPassword")}
+            error={errors.confirmPassword?.message}
+          />
+          <PasswordCompare
+            password={password}
+            confirmPassword={confirmPassword}
+          />
+        </div>
 
-      <button
-        className={`
+        <button
+          className={`
           mt-4  col-span-2 w-full  whitespace-nowrap rounded-tremor-default text-tremor-brand-inverted   py-2 text-center text-tremor-default font-medium
           ${
-            !isValid && isDirty
+            pending
               ? "bg-tremor-brand/65 cursor-not-allowed  border-red-600  "
               : " cursor-pointer bg-tremor-brand shadow-tremor-input hover:bg-tremor-brand-emphasis"
           }`}
-        disabled={!isValid}
-        type="submit"
-      >
-        Sign up
-      </button>
-    </form>
+          disabled={pending}
+          type="submit"
+        >
+          {pending ? "Submitting" : "Sign up"}
+        </button>
+      </form>
+    </>
   );
 }
 
@@ -200,5 +200,15 @@ function PasswordCompare({ password, confirmPassword }: PasswordCompareProps) {
       <RiErrorWarningFill />
       <span>Passwords do not match</span>
     </small>
+  );
+}
+
+function Message({ message, success }: { message: string; success: boolean }) {
+  return (
+    <div className={`mt-4 p-4 ${success ? "bg-green-100" : "bg-red-100"}`}>
+      <p className={`text-sm ${success ? "text-green-700" : "text-red-700"}`}>
+        {message}
+      </p>
+    </div>
   );
 }
