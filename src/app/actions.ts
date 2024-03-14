@@ -5,9 +5,7 @@ export type FormState = {
   message: string;
 };
 
-export async function signUpAction(formData: FormData) {
-  "use server";
-
+export async function hybridAction(formData: FormData): Promise<FormState> {
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
   const email = formData.get("email") as string;
@@ -29,4 +27,15 @@ export async function signUpAction(formData: FormData) {
     success: true,
     message: "User successfully created",
   };
+}
+
+export async function serverOnlyAction(formData: FormData): Promise<FormState> {
+  const firstName = formData.get("firstName") as string;
+  const lastName = formData.get("lastName") as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  //fake api call
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 }
