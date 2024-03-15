@@ -26,7 +26,8 @@ export default function FormInput({
         type={type}
         placeholder={placeholder}
         {...register}
-        className={`${error ? "border border-red-500" : ""}`}
+        error={error ? true : false}
+        errorMessage={error ? error : ""}
       />
       {error ? (
         <small className="text-sm mt-1 text-red-700 flex items-center gap-1">

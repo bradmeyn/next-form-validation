@@ -7,7 +7,15 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import FormInput from "@/app/_components/FormInput";
 import { RiCheckFill, RiErrorWarningFill } from "@remixicon/react";
 import { useFormState, useFormStatus } from "react-dom";
-import { FormState, signUpAction } from "@/app/actions";
+import { FormState, signUp } from "@/app/actions";
+
+type FormInputs = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
 export default function SignUpPage() {
   return (
@@ -18,30 +26,10 @@ export default function SignUpPage() {
         </h3>
 
         <SignUpForm />
-
-        <p className="mt-4 text-tremor-label text-tremor-content dark:text-dark-tremor-content text-center">
-          By signing in, you agree to our{" "}
-          <a href="#" className="underline underline-offset-4">
-            terms of service
-          </a>{" "}
-          and{" "}
-          <a href="#" className="underline underline-offset-4">
-            privacy policy
-          </a>
-          .
-        </p>
       </Card>
     </div>
   );
 }
-
-type FormInputs = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
 
 const schema = z
   .object({
@@ -71,15 +59,15 @@ function SignUpForm() {
     success: false,
   };
 
-  const [state] = useFormState(signUpAction, initialFormState);
+  const [state] = useFormState(signUp);
 
   const { pending } = useFormStatus();
 
   const {
     register,
-    handleSubmit,
     watch,
-    formState: { errors, isSubmitting, isValid, isDirty },
+    trigger,
+    formState: { errors, isValid },
   } = useForm<z.output<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -90,6 +78,22 @@ function SignUpForm() {
       confirmPassword: "",
     },
   });
+
+  const clientAction = async (data: FormData) => {
+    // Validate the form
+    trigger();
+
+    if (!isValid) {
+      console.log(isValid);
+      alert("Form is invalid");
+
+      return;
+    }
+
+    // Call the server action
+    const result = await signUp(data);
+    console.log(result);
+  };
 
   console.log(state);
 
@@ -102,7 +106,7 @@ function SignUpForm() {
       {state?.message ? (
         <Message message={state.message} success={state.success} />
       ) : null}
-      <form action={signUpAction} className="mt-6 grid grid-cols-2 gap-5">
+      <form action={clientAction} className="mt-6 grid grid-cols-2 gap-5">
         <div className="col-span-full sm:col-span-1">
           <FormInput
             label="First name"
